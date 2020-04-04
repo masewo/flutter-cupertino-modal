@@ -236,7 +236,7 @@ class _CupertinoBottomSheetState extends State<CupertinoBottomSheet> {
         if (widget.animationController.value > 0.0)
           widget.animationController
               .fling(velocity: -1.0)
-              .then((value) => _extent._currentExtent.value = 1);
+              .then((value) => !_extent._currentExtent.isDismissed ? _extent._currentExtent.value = 1 : null);
         if (!shouldClose) {
           widget.animationController
               .forward()
