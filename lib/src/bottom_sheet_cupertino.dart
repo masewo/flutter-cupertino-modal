@@ -420,6 +420,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
                 animationController: widget.route._animationController,
                 onClosing: () async {
                   if (widget.route.isCurrent) {
+                    widget.route?.onClosing();
                     bool shouldClose = (await widget.route.willPop() !=
                         RoutePopDisposition.doNotPop);
                     if (widget.route.isCurrent) {
@@ -457,6 +458,7 @@ class _ModalBottomSheetRoute<T> extends PopupRoute<T> {
     this.modalBarrierColor,
     this.isDismissible = true,
     this.enableDrag = true,
+    this.onClosing,
     @required this.expanded,
     RouteSettings settings,
   })  : assert(expanded != null),
@@ -474,6 +476,7 @@ class _ModalBottomSheetRoute<T> extends PopupRoute<T> {
   final Color modalBarrierColor;
   final bool isDismissible;
   final bool enableDrag;
+  final VoidCallback onClosing;
 
   final AnimationController secondAnimationController;
 
@@ -662,6 +665,7 @@ Future<T> showCupertinoModalBottomSheet<T>({
   bool useRootNavigator = false,
   bool isDismissible = true,
   bool enableDrag = true,
+  VoidCallback onClosing,
 }) async {
   assert(context != null);
   assert(builder != null);
@@ -685,6 +689,7 @@ Future<T> showCupertinoModalBottomSheet<T>({
     isDismissible: isDismissible,
     modalBarrierColor: barrierColor,
     enableDrag: enableDrag,
+    onClosing: onClosing
   ));
   return result;
 }
