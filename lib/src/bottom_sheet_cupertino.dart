@@ -205,6 +205,7 @@ class _CupertinoBottomSheetState extends State<CupertinoBottomSheet> {
   }
 
   void _handleDragEnd() {
+    if (!_extent.dragging) return;
     _extent.dragging = false;
     final velocity = _extent.velocity ?? 0;
     assert(widget.enableDrag);
