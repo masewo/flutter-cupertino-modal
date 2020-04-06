@@ -421,7 +421,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
                 animationController: widget.route._animationController,
                 onClosing: () async {
                   if (widget.route.isCurrent) {
-                    widget.route?.onClosing();
+                    widget.route?.onClosing?.call();
                     bool shouldClose = (await widget.route.willPop() !=
                         RoutePopDisposition.doNotPop);
                     if (widget.route.isCurrent) {
