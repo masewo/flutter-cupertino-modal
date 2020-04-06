@@ -87,6 +87,7 @@ class CupertinoBottomSheet extends StatefulWidget {
     Key key,
     this.animationController,
     this.enableDrag = true,
+    this.enableDragNotifier,
     this.backgroundColor,
     this.elevation,
     this.shape,
@@ -124,6 +125,7 @@ class CupertinoBottomSheet extends StatefulWidget {
   ///
   /// Default is true.
   final bool enableDrag;
+  final ValueNotifier<bool> enableDragNotifier;
 
   /// The bottom sheet's background color.
   ///
@@ -182,6 +184,7 @@ class _CupertinoBottomSheetState extends State<CupertinoBottomSheet> {
 
   _DraggableScrollableSheetScrollController _scrollController;
   _DraggableSheetExtent _extent;
+  bool enableDrag = true;
 
   double get _childHeight {
     final RenderBox renderBox =
@@ -261,7 +264,23 @@ class _CupertinoBottomSheetState extends State<CupertinoBottomSheet> {
     );
     _scrollController =
         _DraggableScrollableSheetScrollController(extent: _extent);
+    enableDrag = widget.enableDrag;
+    widget.enableDragNotifier?.addListener(updateEnableDrag);
     super.initState();
+  }
+
+  updateEnableDrag() {
+    if (enableDrag != widget.enableDragNotifier.value) {
+      setState(() {
+        enableDrag = widget.enableDragNotifier.value;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.enableDragNotifier?.removeListener(updateEnableDrag);
+    super.dispose();
   }
 
   @override
@@ -284,8 +303,12 @@ class _CupertinoBottomSheetState extends State<CupertinoBottomSheet> {
       clipBehavior: clipBehavior,
       child: widget.builder(context, _scrollController),
     );
-    return !widget.enableDrag
-        ? bottomSheet
+    return !enableDrag
+        ? widget.enableDragNotifier != null ? LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        _extent.availablePixels = constraints.biggest.height;
+        return _CupertinoBottomSheetContainer(child: bottomSheet);
+      }) : bottomSheet
         : GestureDetector(
             onVerticalDragUpdate: _handleDragUpdate,
             onVerticalDragEnd: (_) => _handleDragEnd(),
@@ -343,6 +366,7 @@ class _ModalBottomSheet<T> extends StatefulWidget {
     this.secondAnimationController,
     this.expanded = false,
     this.enableDrag = true,
+    this.enableDragNotifier,
   })  : assert(expanded != null),
         assert(enableDrag != null),
         super(key: key);
@@ -354,6 +378,7 @@ class _ModalBottomSheet<T> extends StatefulWidget {
   final ShapeBorder shape;
   final Clip clipBehavior;
   final bool enableDrag;
+  final ValueNotifier<bool> enableDragNotifier;
   final AnimationController secondAnimationController;
 
   @override
@@ -437,6 +462,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
                 shape: widget.shape,
                 clipBehavior: widget.clipBehavior,
                 enableDrag: widget.enableDrag,
+                enableDragNotifier: widget.enableDragNotifier,
               ),
             ),
           ),
@@ -460,6 +486,7 @@ class _ModalBottomSheetRoute<T> extends PopupRoute<T> {
     this.isDismissible = true,
     this.enableDrag = true,
     this.onClosing,
+    this.enableDragNotifier,
     @required this.expanded,
     RouteSettings settings,
   })  : assert(expanded != null),
@@ -478,6 +505,7 @@ class _ModalBottomSheetRoute<T> extends PopupRoute<T> {
   final bool isDismissible;
   final bool enableDrag;
   final VoidCallback onClosing;
+  final ValueNotifier<bool> enableDragNotifier;
 
   final AnimationController secondAnimationController;
 
@@ -525,6 +553,7 @@ class _ModalBottomSheetRoute<T> extends PopupRoute<T> {
         clipBehavior: clipBehavior,
         expanded: expanded,
         enableDrag: enableDrag,
+        enableDragNotifier: enableDragNotifier,
       ),
     );
     if (theme != null) bottomSheet = Theme(data: theme, child: bottomSheet);
@@ -667,6 +696,7 @@ Future<T> showCupertinoModalBottomSheet<T>({
   bool isDismissible = true,
   bool enableDrag = true,
   VoidCallback onClosing,
+  ValueNotifier<bool> enableDragNotifier
 }) async {
   assert(context != null);
   assert(builder != null);
@@ -690,7 +720,8 @@ Future<T> showCupertinoModalBottomSheet<T>({
     isDismissible: isDismissible,
     modalBarrierColor: barrierColor,
     enableDrag: enableDrag,
-    onClosing: onClosing
+    onClosing: onClosing,
+    enableDragNotifier: enableDragNotifier
   ));
   return result;
 }
